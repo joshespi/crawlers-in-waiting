@@ -3,6 +3,8 @@ set -e
 
 cd /var/www/html
 
+mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/framework/testing bootstrap/cache
+
 echo "[deploy] composer install"
 composer install --no-dev --optimize-autoloader --no-interaction --quiet
 
