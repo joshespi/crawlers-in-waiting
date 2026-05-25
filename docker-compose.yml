@@ -1,0 +1,85 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - ./src:/var/www/html
+    environment:
+      APP_URL: ${APP_URL}
+      APP_NAME: ${APP_NAME}
+      APP_ENV: ${APP_ENV}
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: ${APP_DEBUG}
+      LOG_CHANNEL: ${LOG_CHANNEL}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DB_CONNECTION: mariadb
+      DB_HOST: ciw-db
+      DB_PORT: 3306
+      SESSION_DRIVER: database
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-smtp-relay.brevo.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES}
+      SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-true}
+      PODCAST_TITLE: ${PODCAST_TITLE:-Crawlers in Waiting}
+      PODCAST_DESCRIPTION: ${PODCAST_DESCRIPTION}
+      PODCAST_AUTHOR: ${PODCAST_AUTHOR}
+      PODCAST_EMAIL: ${PODCAST_EMAIL}
+      PODCAST_CATEGORY: ${PODCAST_CATEGORY:-TV & Film}
+      PODCAST_LANGUAGE: ${PODCAST_LANGUAGE:-en}
+      PODCAST_EXPLICIT: ${PODCAST_EXPLICIT:-false}
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    container_name: ciw-app
+    networks:
+      - laravel
+
+  nginx:
+    image: nginx:alpine
+    container_name: ciw-nginx
+    restart: always
+    ports:
+      - "8081:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - laravel
+
+  db:
+    image: mariadb:11.8
+    container_name: ciw-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_DATABASE:-ciw}
+      MYSQL_USER: ${DB_USERNAME:-ciw}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - ./db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - laravel
+
+networks:
+  laravel:
+    driver: bridge
