@@ -1,4 +1,13 @@
-FROM php:8.5-fpm
+FROM node:24-alpine AS assets
+WORKDIR /app
+COPY src/package*.json ./
+RUN npm ci --silent
+COPY src/vite.config.js ./
+COPY src/resources ./resources
+COPY src/public ./public
+RUN npm run build
+
+FROM php:8.5-fpm AS app
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -13,17 +22,22 @@ RUN apt-get update && apt-get install -y \
 
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 COPY docker/php/zzz-laravel.conf /usr/local/etc/php-fpm.d/zzz-laravel.conf
 COPY docker/php/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
-    && apt-get install -y nodejs
-
-RUN npm install -g npm@latest
-
 WORKDIR /var/www/html
 
+COPY src/ .
+RUN mkdir -p bootstrap/cache storage/framework/views storage/framework/cache/data storage/framework/sessions storage/framework/testing \
+    && composer install --no-dev --optimize-autoloader --no-interaction --quiet
+
+COPY --from=assets /app/public/build ./public/build
+
 ENTRYPOINT ["/entrypoint.sh"]
+
+FROM nginx:alpine AS nginx-server
+COPY src/public /var/www/html/public
+COPY --from=assets /app/public/build /var/www/html/public/build
