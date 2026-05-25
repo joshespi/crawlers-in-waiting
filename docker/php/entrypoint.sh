@@ -3,7 +3,8 @@ set -e
 
 cd /var/www/html
 
-mkdir -p storage/framework/views storage/framework/cache/data storage/framework/sessions storage/framework/testing bootstrap/cache
+mkdir -p storage/logs storage/framework/views storage/framework/cache/data storage/framework/sessions storage/framework/testing bootstrap/cache
+chown -R www-data:www-data storage/ bootstrap/cache/
 
 # vendor/ may not exist when running with a dev bind mount
 if [ ! -f vendor/autoload.php ]; then
