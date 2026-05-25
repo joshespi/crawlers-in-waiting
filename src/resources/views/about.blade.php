@@ -26,6 +26,19 @@
         </p>
 
         <div class="border border-stone-800 rounded p-5 mt-8">
+            <div class="text-xs text-stone-600 font-bold tracking-widest mb-4">YOUR HOSTS</div>
+            <div class="flex flex-wrap gap-6">
+                @foreach([['espi', 'Espi'], ['skys', 'Skys'], ['grish', 'Grish']] as [$slug, $name])
+                <div class="flex flex-col items-center gap-2">
+                    <img src="{{ asset('images/' . $slug . '.jpg') }}" alt="{{ $name }}"
+                         class="w-20 h-20 rounded-full object-cover ring-1 ring-stone-700" />
+                    <span class="text-sm text-stone-300 font-semibold">{{ $name }}</span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+        <div class="border border-stone-800 rounded p-5 mt-4">
             <div class="text-xs text-stone-600 font-bold tracking-widest mb-3">FIND US</div>
             <ul class="space-y-2 text-sm">
                 <li>

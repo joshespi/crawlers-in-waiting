@@ -11,11 +11,11 @@
     <atom:link href="{{ $feedUrl }}" rel="self" type="application/rss+xml"/>
 
     <image>
-        <url>{{ asset('images/cover.jpg') }}</url>
+        <url>{{ asset('images/album.jpg') }}</url>
         <title>{{ $podcast['title'] }}</title>
         <link>{{ $link }}</link>
     </image>
-    <itunes:image href="{{ asset('images/cover.jpg') }}"/>
+    <itunes:image href="{{ asset('images/album.jpg') }}"/>
     <itunes:author>{{ $podcast['author'] }}</itunes:author>
     <itunes:owner>
         <itunes:name>{{ $podcast['author'] }}</itunes:name>
@@ -36,7 +36,7 @@
         <itunes:duration>{{ $episode->duration_formatted }}</itunes:duration>
         <itunes:episode>{{ $episode->episode_number }}</itunes:episode>
         <itunes:season>{{ $episode->season_number }}</itunes:season>
-        <itunes:image href="{{ $episode->cover_image_url ?? asset('images/cover.jpg') }}"/>
+        <itunes:image href="{{ $episode->cover_image_url ?? asset('images/album.jpg') }}"/>
         @if($episode->show_notes)
         <content:encoded><![CDATA[{!! nl2br(e($episode->show_notes)) !!}]]></content:encoded>
         @endif

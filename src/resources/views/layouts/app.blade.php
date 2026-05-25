@@ -7,11 +7,11 @@
     <meta name="description" content="@yield('description', 'A Dungeon Crawler Carl read-along podcast.')">
     <meta property="og:title" content="@yield('title', 'Crawlers in Waiting')">
     <meta property="og:description" content="@yield('description', 'A Dungeon Crawler Carl read-along podcast.')">
-    <meta property="og:image" content="{{ asset('images/cover.jpg') }}">
+    <meta property="og:image" content="{{ asset('images/album.jpg') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="{{ asset('images/cover.jpg') }}">
+    <meta name="twitter:image" content="{{ asset('images/album.jpg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen flex flex-col font-mono">
