@@ -16,14 +16,14 @@
 
     <div class="grid grid-cols-2 gap-4">
         <div>
-            <label class="block text-xs text-stone-500 mb-1 tracking-widest">SEASON</label>
+            <label class="block text-xs text-stone-500 mb-1 tracking-widest">BOOK</label>
             <input type="number" name="season_number" value="{{ old('season_number', $episode->season_number ?? 1) }}" min="1" required
                 class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-200 text-sm focus:border-amber-700 focus:outline-none @error('season_number') border-red-700 @enderror">
             @error('season_number') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
         <div>
-            <label class="block text-xs text-stone-500 mb-1 tracking-widest">EPISODE #</label>
-            <input type="number" name="episode_number" value="{{ old('episode_number', $episode->episode_number ?? '') }}" min="1" required
+            <label class="block text-xs text-stone-500 mb-1 tracking-widest">CHAPTER #</label>
+            <input type="number" name="episode_number" value="{{ old('episode_number', $episode->episode_number ?? '') }}" min="0" required
                 class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-200 text-sm focus:border-amber-700 focus:outline-none @error('episode_number') border-red-700 @enderror">
             @error('episode_number') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
@@ -36,12 +36,14 @@
         @error('title') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
     </div>
 
+    @if($episode->exists)
     <div>
         <label class="block text-xs text-stone-500 mb-1 tracking-widest">SLUG</label>
-        <input type="text" name="slug" value="{{ old('slug', $episode->slug ?? '') }}" required
-            class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-200 text-sm focus:border-amber-700 focus:outline-none @error('slug') border-red-700 @enderror">
-        @error('slug') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+        <input type="text" value="{{ $episode->slug }}" disabled
+            class="w-full bg-stone-800 border border-stone-700 rounded px-3 py-2 text-stone-500 text-sm cursor-not-allowed">
+        <p class="text-stone-600 text-xs mt-1">Auto-generated on create. Can't change — it's the public URL.</p>
     </div>
+    @endif
 
     <div>
         <label class="block text-xs text-stone-500 mb-1 tracking-widest">DESCRIPTION</label>
@@ -52,15 +54,24 @@
 
     <div>
         <label class="block text-xs text-stone-500 mb-1 tracking-widest">AUDIO URL</label>
-        <input type="url" name="audio_url" value="{{ old('audio_url', $episode->audio_url ?? '') }}" required
+        <input type="url" id="audio_url" name="audio_url" value="{{ old('audio_url', $episode->audio_url ?? '') }}" required
             class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-200 text-sm focus:border-amber-700 focus:outline-none @error('audio_url') border-red-700 @enderror">
         @error('audio_url') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
     </div>
 
+    <div>
+        <label class="block text-xs text-stone-500 mb-1 tracking-widest">YOUTUBE URL (optional)</label>
+        <input type="url" name="youtube_url" value="{{ old('youtube_url', $episode->youtube_url ?? '') }}"
+            class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-200 text-sm focus:border-amber-700 focus:outline-none">
+    </div>
+
     <div class="grid grid-cols-2 gap-4">
         <div>
-            <label class="block text-xs text-stone-500 mb-1 tracking-widest">DURATION (seconds)</label>
-            <input type="number" name="duration_seconds" value="{{ old('duration_seconds', $episode->duration_seconds ?? '') }}" min="1" required
+            <label class="block text-xs text-stone-500 mb-1 tracking-widest">
+                DURATION (seconds)
+                <span id="duration-status" class="ml-2 normal-case font-normal text-stone-600"></span>
+            </label>
+            <input type="number" id="duration_seconds" name="duration_seconds" value="{{ old('duration_seconds', $episode->duration_seconds ?? '') }}" min="1" required
                 class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-200 text-sm focus:border-amber-700 focus:outline-none @error('duration_seconds') border-red-700 @enderror">
             @error('duration_seconds') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
@@ -94,4 +105,53 @@
            class="text-stone-500 hover:text-stone-300 text-sm py-2 transition-colors">Cancel</a>
     </div>
 </form>
+
+<script>
+(function () {
+    const audioInput = document.getElementById('audio_url');
+    const durationInput = document.getElementById('duration_seconds');
+    const status = document.getElementById('duration-status');
+    let audio = null;
+
+    function onMetadata() {
+        const secs = Math.round(audio.duration);
+        if (isFinite(secs) && secs > 0) {
+            durationInput.value = secs;
+            status.textContent = '✓ auto-detected';
+            status.className = 'ml-2 normal-case font-normal text-amber-600';
+        } else {
+            onError();
+        }
+    }
+
+    function onError() {
+        status.textContent = 'could not detect — enter manually';
+        status.className = 'ml-2 normal-case font-normal text-stone-500';
+    }
+
+    function detect(url) {
+        if (!url) return;
+        status.textContent = 'detecting…';
+        if (audio) {
+            audio.removeEventListener('loadedmetadata', onMetadata);
+            audio.removeEventListener('error', onError);
+            audio.src = '';
+        }
+        audio = new Audio();
+        audio.preload = 'metadata';
+        audio.addEventListener('loadedmetadata', onMetadata);
+        audio.addEventListener('error', onError);
+        audio.src = url;
+    }
+
+    audioInput.addEventListener('change', function () {
+        detect(this.value.trim());
+    });
+
+    // Only fires if duration wasn't already filled by the change event
+    audioInput.addEventListener('blur', function () {
+        if (!durationInput.value) detect(this.value.trim());
+    });
+}());
+</script>
 @endsection

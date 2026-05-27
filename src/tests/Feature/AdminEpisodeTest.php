@@ -45,32 +45,46 @@ class AdminEpisodeTest extends TestCase
     public function test_can_create_episode(): void
     {
         $this->actingAs($this->admin)->post(route('admin.episodes.store'), [
-            'episode_number' => 1,
-            'season_number' => 1,
-            'title' => 'First Episode',
-            'slug' => 'first-episode',
-            'description' => 'The beginning.',
-            'audio_url' => 'https://cdn.example.com/ep1.mp3',
+            'episode_number'  => 1,
+            'season_number'   => 1,
+            'title'           => 'First Episode',
+            'description'     => 'The beginning.',
+            'audio_url'       => 'https://cdn.example.com/ep1.mp3',
             'duration_seconds' => 2400,
-            'published_at' => null,
+            'published_at'    => null,
         ])->assertRedirect(route('admin.episodes.index'));
 
         $this->assertDatabaseHas('episodes', ['slug' => 'first-episode']);
     }
 
-    public function test_slug_must_be_unique_on_create(): void
+    public function test_slug_auto_generated_from_title(): void
     {
-        Episode::factory()->create(['slug' => 'existing-slug']);
+        $this->actingAs($this->admin)->post(route('admin.episodes.store'), [
+            'episode_number'  => 1,
+            'season_number'   => 1,
+            'title'           => 'Hello World Episode',
+            'description'     => 'Test.',
+            'audio_url'       => 'https://cdn.example.com/ep.mp3',
+            'duration_seconds' => 1000,
+        ]);
+
+        $this->assertDatabaseHas('episodes', ['slug' => 'hello-world-episode']);
+    }
+
+    public function test_slug_deduped_when_title_collision(): void
+    {
+        Episode::factory()->create(['slug' => 'duplicate-title']);
 
         $this->actingAs($this->admin)->post(route('admin.episodes.store'), [
-            'episode_number' => 2,
-            'season_number' => 1,
-            'title' => 'Duplicate',
-            'slug' => 'existing-slug',
-            'description' => 'Dupe.',
-            'audio_url' => 'https://cdn.example.com/ep2.mp3',
+            'episode_number'  => 2,
+            'season_number'   => 1,
+            'title'           => 'Duplicate Title',
+            'description'     => 'Dupe.',
+            'audio_url'       => 'https://cdn.example.com/ep2.mp3',
             'duration_seconds' => 1800,
-        ])->assertSessionHasErrors('slug');
+        ])->assertRedirect(route('admin.episodes.index'));
+
+        $this->assertDatabaseHas('episodes', ['slug' => 'duplicate-title-2']);
     }
 
     public function test_can_update_episode(): void
@@ -78,31 +92,30 @@ class AdminEpisodeTest extends TestCase
         $episode = Episode::factory()->create(['title' => 'Old Title']);
 
         $this->actingAs($this->admin)->put(route('admin.episodes.update', $episode), [
-            'episode_number' => $episode->episode_number,
-            'season_number' => $episode->season_number,
-            'title' => 'New Title',
-            'slug' => $episode->slug,
-            'description' => $episode->description,
-            'audio_url' => $episode->audio_url,
+            'episode_number'  => $episode->episode_number,
+            'season_number'   => $episode->season_number,
+            'title'           => 'New Title',
+            'description'     => $episode->description,
+            'audio_url'       => $episode->audio_url,
             'duration_seconds' => $episode->duration_seconds,
         ])->assertRedirect(route('admin.episodes.index'));
 
         $this->assertDatabaseHas('episodes', ['id' => $episode->id, 'title' => 'New Title']);
     }
 
-    public function test_can_update_episode_keeping_its_own_slug(): void
+    public function test_can_save_youtube_url(): void
     {
-        $episode = Episode::factory()->create(['slug' => 'my-slug']);
-
-        $this->actingAs($this->admin)->put(route('admin.episodes.update', $episode), [
-            'episode_number' => $episode->episode_number,
-            'season_number' => $episode->season_number,
-            'title' => 'Updated Title',
-            'slug' => 'my-slug',
-            'description' => $episode->description,
-            'audio_url' => $episode->audio_url,
-            'duration_seconds' => $episode->duration_seconds,
+        $this->actingAs($this->admin)->post(route('admin.episodes.store'), [
+            'episode_number'  => 1,
+            'season_number'   => 1,
+            'title'           => 'YouTube Episode',
+            'description'     => 'Has video.',
+            'audio_url'       => 'https://archive.org/ep.mp3',
+            'youtube_url'     => 'https://www.youtube.com/watch?v=abc123',
+            'duration_seconds' => 3600,
         ])->assertRedirect(route('admin.episodes.index'));
+
+        $this->assertDatabaseHas('episodes', ['youtube_url' => 'https://www.youtube.com/watch?v=abc123']);
     }
 
     public function test_can_delete_episode(): void

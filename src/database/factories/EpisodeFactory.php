@@ -25,7 +25,7 @@ class EpisodeFactory extends Factory
         $title = fake()->unique()->randomElement($titles);
 
         return [
-            'episode_number' => fake()->unique()->numberBetween(1, 100),
+            'episode_number' => fake()->unique()->numberBetween(0, 100),
             'season_number' => 1,
             'title' => $title,
             'slug' => Str::slug($title),

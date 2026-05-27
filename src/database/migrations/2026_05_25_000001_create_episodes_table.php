@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('description');
             $table->longText('show_notes')->nullable();
             $table->string('audio_url');
+            $table->string('youtube_url')->nullable();
             $table->unsignedInteger('duration_seconds');
             $table->string('cover_image_url')->nullable();
             $table->timestamp('published_at')->nullable();

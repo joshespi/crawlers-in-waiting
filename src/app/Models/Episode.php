@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Episode extends Model
 {
@@ -18,6 +19,7 @@ class Episode extends Model
         'description',
         'show_notes',
         'audio_url',
+        'youtube_url',
         'duration_seconds',
         'cover_image_url',
         'published_at',
@@ -51,11 +53,25 @@ class Episode extends Model
 
     public function getEpisodeLabelAttribute(): string
     {
-        return "S{$this->season_number}E{$this->episode_number}";
+        return "Book {$this->season_number}, Ch. {$this->episode_number}";
     }
 
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    public static function uniqueSlug(string $title): string
+    {
+        $base = Str::slug($title);
+        $slug = $base;
+        $i = 2;
+
+        while (static::where('slug', $slug)->exists()) {
+            $slug = "{$base}-{$i}";
+            $i++;
+        }
+
+        return $slug;
     }
 }

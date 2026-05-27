@@ -28,6 +28,6 @@ class EpisodeTest extends TestCase
     public function test_episode_label_format(): void
     {
         $episode = new Episode(['season_number' => 2, 'episode_number' => 7]);
-        $this->assertSame('S2E7', $episode->episode_label);
+        $this->assertSame('Book 2, Ch. 7', $episode->episode_label);
     }
 }

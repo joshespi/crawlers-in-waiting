@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Episode;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class EpisodeController extends Controller
 {
@@ -26,6 +25,7 @@ class EpisodeController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        $data['slug'] = Episode::uniqueSlug($data['title']);
 
         Episode::create($data);
 
@@ -40,9 +40,7 @@ class EpisodeController extends Controller
 
     public function update(Request $request, Episode $episode)
     {
-        $data = $this->validated($request, $episode);
-
-        $episode->update($data);
+        $episode->update($this->validated($request));
 
         return redirect()->route('admin.episodes.index')
             ->with('success', 'Episode updated.');
@@ -56,21 +54,19 @@ class EpisodeController extends Controller
             ->with('success', 'Episode deleted.');
     }
 
-    private function validated(Request $request, ?Episode $episode = null): array
+    private function validated(Request $request): array
     {
-        $data = $request->validate([
-            'episode_number' => 'required|integer|min:1',
-            'season_number' => 'required|integer|min:1',
-            'title' => 'required|string|max:255',
-            'slug' => ['required', 'string', 'max:255', Rule::unique('episodes', 'slug')->ignore($episode)],
-            'description' => 'required|string',
-            'show_notes' => 'nullable|string',
-            'audio_url' => 'required|url',
+        return $request->validate([
+            'episode_number'  => 'required|integer|min:0',
+            'season_number'   => 'required|integer|min:1',
+            'title'           => 'required|string|max:255',
+            'description'     => 'required|string',
+            'show_notes'      => 'nullable|string',
+            'audio_url'       => 'required|url|starts_with:https://,http://',
+            'youtube_url'     => 'nullable|url|starts_with:https://,http://',
             'duration_seconds' => 'required|integer|min:1',
-            'cover_image_url' => 'nullable|url',
-            'published_at' => 'nullable|date',
+            'cover_image_url' => 'nullable|url|starts_with:https://,http://',
+            'published_at'    => 'nullable|date',
         ]);
-
-        return $data;
     }
 }
