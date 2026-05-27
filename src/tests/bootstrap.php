@@ -18,11 +18,13 @@ foreach ($testEnv as $key => $value) {
     putenv("$key=$value");
 }
 
-// Cached config bakes in APP_ENV from the last artisan config:cache run (usually 'local').
-// Delete it so env vars set above take effect when Laravel boots.
-$configCache = __DIR__.'/../bootstrap/cache/config.php';
-if (file_exists($configCache)) {
-    unlink($configCache);
+// Cached config/routes bake in values from the last artisan optimize run.
+// Delete them so env vars and new routes take effect when Laravel boots.
+foreach (['config.php', 'routes-v7.php'] as $cacheFile) {
+    $path = __DIR__.'/../bootstrap/cache/' . $cacheFile;
+    if (file_exists($path)) {
+        unlink($path);
+    }
 }
 
 require __DIR__.'/../vendor/autoload.php';

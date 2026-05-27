@@ -13,6 +13,7 @@
             <div class="text-amber-400 font-bold text-sm tracking-wide">CIW ADMIN</div>
             <div class="flex items-center gap-6 text-sm">
                 <a href="{{ route('admin.episodes.index') }}" class="text-stone-400 hover:text-amber-400 transition-colors">Episodes</a>
+                <a href="{{ route('admin.profile.edit') }}" class="text-stone-400 hover:text-amber-400 transition-colors">Profile</a>
                 <a href="{{ route('home') }}" class="text-stone-400 hover:text-amber-400 transition-colors">View Site</a>
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf

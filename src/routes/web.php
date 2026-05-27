@@ -3,6 +3,7 @@
 use App\Http\Controllers\EpisodeController;
 use App\Http\Controllers\RssController;
 use App\Http\Controllers\Admin\EpisodeController as AdminEpisodeController;
+use App\Http\Controllers\Admin\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Public
@@ -20,4 +21,6 @@ Route::post('/logout', [\App\Http\Controllers\Auth\AuthenticatedSessionControlle
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/', fn () => redirect()->route('admin.episodes.index'));
     Route::resource('episodes', AdminEpisodeController::class);
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
