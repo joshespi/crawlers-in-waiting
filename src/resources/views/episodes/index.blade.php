@@ -9,9 +9,13 @@
          class="w-full object-cover object-top">
 </div>
 
-<div class="mb-8">
-    <h1 class="text-2xl font-bold text-amber-400 tracking-wide">EPISODE LOG</h1>
-    <p class="text-stone-500 text-sm mt-1">All transmissions from the dungeon, catalogued.</p>
+<div class="flex items-center gap-6 mb-8">
+    <img src="{{ asset('images/album.jpg') }}" alt="{{ config('podcast.title') }}"
+         class="w-20 h-20 rounded-lg object-cover ring-1 ring-stone-700 shrink-0">
+    <div>
+        <h1 class="text-2xl font-bold text-amber-400 tracking-wide">EPISODE LOG</h1>
+        <p class="text-stone-500 text-sm mt-1">All transmissions from the dungeon, catalogued.</p>
+    </div>
 </div>
 
 @if($episodes->isEmpty())

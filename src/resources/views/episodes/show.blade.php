@@ -10,15 +10,22 @@
 
 <article>
     <header class="mb-8">
-        <div class="flex items-center gap-3 mb-3">
-            <span class="text-xs text-amber-700 font-bold tracking-widest border border-amber-900/50 px-2 py-0.5 rounded">
-                {{ $episode->episode_label }}
-            </span>
-            <span class="text-xs text-stone-600">{{ $episode->published_at->format('F j, Y') }}</span>
-            <span class="text-xs text-stone-600">{{ $episode->duration_formatted }}</span>
+        <div class="flex gap-6 items-start">
+            <img src="{{ $episode->cover_image_url ?? asset('images/album.jpg') }}"
+                 alt="{{ $episode->title }}"
+                 class="w-32 h-32 rounded-lg object-cover ring-1 ring-stone-700 shrink-0">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="text-xs text-amber-700 font-bold tracking-widest border border-amber-900/50 px-2 py-0.5 rounded">
+                        {{ $episode->episode_label }}
+                    </span>
+                    <span class="text-xs text-stone-600">{{ $episode->published_at->format('F j, Y') }}</span>
+                    <span class="text-xs text-stone-600">{{ $episode->duration_formatted }}</span>
+                </div>
+                <h1 class="text-2xl font-bold text-amber-400">{{ $episode->title }}</h1>
+                <p class="text-stone-400 mt-3 leading-relaxed">{{ $episode->description }}</p>
+            </div>
         </div>
-        <h1 class="text-2xl font-bold text-amber-400">{{ $episode->title }}</h1>
-        <p class="text-stone-400 mt-3 leading-relaxed">{{ $episode->description }}</p>
     </header>
 
     <div class="mb-8">
